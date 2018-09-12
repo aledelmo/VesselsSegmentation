@@ -15,6 +15,7 @@ class Tree:
         self.points = self.points[self.points[:, 2].argsort()][::-1]
         self.affine = affine
 
+        self.tree = Node('root', voxel=self.points[0])
         self.build_tree()
 
     def __repr__(self):
@@ -24,7 +25,6 @@ class Tree:
         return "{}({},{})".format(self.__class__.__name__, 'Points_list', 'Affine')
 
     def build_tree(self):
-        self.tree = Node('root', voxel=self.points[0])
         for point in self.points[1:]:
             min_dist = np.inf
             best_node = None
