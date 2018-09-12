@@ -10,6 +10,9 @@ import qt
 import slicer
 import sys
 import pickle
+import vtk
+from builtins import int, range
+import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import processing_vs as vs
@@ -117,7 +120,7 @@ class VesselSegmentationWidget:
         self.output_selector.removeEnabled = False
         self.output_selector.noneEnabled = False
         self.output_selector.showHidden = False
-        self.output_selector.renameEnabled = False
+        self.output_selector.renameEnabled = True
         self.output_selector.showChildNodeTypes = False
         self.output_selector.setMRMLScene(slicer.mrmlScene)
 
