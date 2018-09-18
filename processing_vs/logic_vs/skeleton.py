@@ -3,7 +3,7 @@
 
 import numpy as np
 from nibabel.affines import apply_affine
-from .distance_measure import distance, bresenhamline
+from .pathing import distance, bresenhamline
 from anytree import Node, RenderTree, PreOrderIter
 
 from builtins import int
