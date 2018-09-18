@@ -17,7 +17,7 @@ def main():
     """
     volume, seeds, vessel_type, output = setup()
 
-    vs.proc(volume, seeds, vessel_type, output, False)
+    vs.proc(volume, seeds, vessel_type, output)
 
 
 def setup():
