@@ -10,9 +10,7 @@ import qt
 import slicer
 import sys
 import pickle
-import vtk
-from builtins import int, range
-import numpy as np
+from builtins import range
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import processing_vs as vs
@@ -298,15 +296,15 @@ class VesselSegmentationLogic:
         with open(markups_path, 'wb') as handle:
             pickle.dump(markups_list, handle)
 
-        with open('/Users/imag2/Desktop/VesselsSegmentation/test_dataset/init.pkl', 'wb') as handle:
-            pickle.dump(markups_list, handle)
+        # with open('/Users/imag2/Desktop/VesselsSegmentation/test_dataset/init.pkl', 'wb') as handle:
+        #     pickle.dump(markups_list, handle)
 
         if vessel_type == 1:
             vessel = 'vein'
         else:
             vessel = 'artery'
 
-        vs.proc(reference_path, markups_path, vessel, output_path, True)
+        vs.proc(reference_path, markups_path, vessel, output_path)
 
         return output_path
 
