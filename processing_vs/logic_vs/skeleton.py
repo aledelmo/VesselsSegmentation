@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
 import numpy as np
 from nibabel.affines import apply_affine
 from .pathing import distance, bresenhamline
@@ -50,12 +52,13 @@ class Tree:
         return mask
 
     def get_patches(self, ref_img):
+        ref_img = ref_img / np.amax(ref_img)
         patches = []
         for node in PreOrderIter(self.tree):
             for child in node.children:
                 idx = bresenhamline(node.voxel[:, np.newaxis].T, child.voxel[:, np.newaxis].T, max_iter=-1).astype(
                     np.int16)
                 for i in idx:
-                    patch = ref_img[i[0] - 15:i[0] + 16, i[1] - 15:i[1] + 16, i[2] - 1:i[2] + 2]
+                    patch = (256*ref_img[i[0] - 15:i[0] + 16, i[1] - 15:i[1] + 16, i[2] - 1:i[2] + 2]).astype(np.uint8)
                     patches.append((i, patch))
         return patches
