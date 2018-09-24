@@ -11,6 +11,8 @@ def apply_infer(patch, net):
     # _patch -= _patch.mean(axis=0)
     _patch = _patch.transpose((2, 0, 1))
 
+    print(_patch)
+
     net.blobs['data'].reshape(1, *_patch.shape)
     net.blobs['data'].data[...] = _patch
     net.forward()
@@ -20,8 +22,12 @@ def apply_infer(patch, net):
 
 
 class Cnn:
-    def __init__(self):
-        caffe.set_device(0)
+    def __init__(self, use_gpu):
+        if use_gpu:
+            caffe.set_device(0)
+            caffe.set_mode_gpu()
+        else:
+            caffe.set_mode_cpu()
         self.net = None
 
     def __repr__(self):
@@ -30,12 +36,7 @@ class Cnn:
     def __str__(self):
         return "{}()".format('Convolutional Neural Network')
 
-    def load_net(self, deploy_fpath, model_fpath, use_gpu):
-        if use_gpu:
-            caffe.set_mode_gpu()
-        else:
-            caffe.set_mode_cpu()
-
+    def load_net(self, deploy_fpath, model_fpath):
         self.net = caffe.Net(deploy_fpath, model_fpath, caffe.TEST)
 
     def infer(self, patches):
