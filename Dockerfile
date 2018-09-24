@@ -1,17 +1,32 @@
 FROM bvlc/caffe:cpu
 
+WORKDIR .
+#VOLUME /test_docker
+
+ARG folder
+
 ADD vessel_segmentation.py .
 ADD requirements.txt .
 ADD processing_vs processing_vs
 ADD cnn_models cnn_models
+ADD test_docker.py .
 
-ARG input_volume
-ARG initialization
-ARG type
+ADD test_dataset/coroT2Cube.nii.gz .
+ADD test_dataset/init.pkl .
 
-ADD $input_volume input.nii.gz
-ADD $initialization init.pkl
+#ARG input_volume
+#ARG initialization
+#ARG type
 
-RUN pip install -r requirements,txt
+#ADD $input_volume input.nii.gz
+#ADD $initialization init.pkl
 
-CMD ["python", "vessel_segmentation.py input.nii.gz init.pkl ${type} segmentation/seg.nii.gz"]
+#RUN ls
+RUN pip install -r requirements.txt
+
+RUN ls
+#RUN ls /test_docker
+
+#CMD ["python", "vessel_segmentation.py", "/test_docker/input.nii.gz", "/test_docker/init.pkl", "/test_docker/seg.nii.gz"]
+CMD ["python", "vessel_segmentation.py", "coroT2Cube.nii.gz", "init.pkl", "artery", "/test_docker/seg.nii.gz"]
+#CMD ["python", "test_docker.py", "/test_docker/input.nii.gz", "/test_docker/init.pkl", "/test_docker/seg.nii.gz"]
