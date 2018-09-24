@@ -13,7 +13,8 @@ def proc(volume, seeds, vessel_type, output):
     else:
         label_number = 16
 
-    cnn = Cnn()
+    use_gpu = False
+    cnn = Cnn(use_gpu)
     hierarchy = Tree(points, affine)
 
     # mask_skeleton = hierarchy.get_label_mask(data, label_number)
@@ -23,7 +24,7 @@ def proc(volume, seeds, vessel_type, output):
     model_fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'cnn_models',
                                'snapshot_iter_135000.caffemodel')
 
-    cnn.load_net(deploy_fpath, model_fpath, True)
+    cnn.load_net(deploy_fpath, model_fpath)
     out_patches = cnn.infer(hierarchy.get_patches(data))
 
     output_data = reconstruct(out_patches, data, label_number)
