@@ -2,21 +2,41 @@
 # -*- coding: utf-8 -*-
 
 import os
+import pickle
 import shutil
-import tempfile
 import unittest
+from builtins import range
+# from contextlib import contextmanager
+from subprocess import call
+
 import ctk
+import docker
 import qt
 import slicer
-import sys
-import pickle
-from builtins import range
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-import processing_vs as vs
 
 __author__ = 'Alessandro Delmonte'
 __email__ = 'delmonte.ale92@gmail.com'
+
+
+# def pipe(cmd, verbose=False, my_env=slicer.util.startupEnvironment()):
+#     if verbose:
+#         print('Processing command: ' + str(cmd))
+#
+#     slicer.app.processEvents()
+#
+#     return call(cmd, shell=True, stdin=None, stdout=None, stderr=None,
+#                 executable=os.path.abspath(slicer.util.startupEnvironment()['SHELL']),
+#                 env=my_env)
+#
+#
+# @contextmanager
+# def cd(newdir):
+#     prevdir = os.getcwd()
+#     os.chdir(os.path.expanduser(newdir))
+#     try:
+#         yield
+#     finally:
+#         os.chdir(prevdir)
 
 
 class VesselSegmentation:
@@ -64,8 +84,8 @@ class VesselSegmentationWidget:
         except AttributeError:
             self.developerMode = settings.value('Developer/DeveloperMode') is True
 
-        self.tmp = tempfile.mkdtemp()
-        self.logic = VesselSegmentationLogic(self.tmp)
+        self.tmp = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'test_dataset', 'docker_infer')
+        self.logic = VesselSegmentationLogic()
 
         if not parent:
             self.parent = slicer.qMRMLWidget()
@@ -140,42 +160,25 @@ class VesselSegmentationWidget:
         line.setStyleSheet("min-height: 24px")
         vs_form_layout.addRow(line)
 
-        options_grid_layout = qt.QGridLayout()
-        options_grid_layout.setColumnStretch(0, 1)
-        options_grid_layout.setColumnStretch(1, 1)
-        options_grid_layout.setColumnStretch(2, 1)
-
-        type_text_label = qt.QLabel()
-        type_text_label.setText('Vessel type: ')
-        options_grid_layout.addWidget(type_text_label, 0, 0, 0)
-
-        self.radio_art = qt.QRadioButton('Arteries')
-        self.radio_art.setChecked(True)
-        self.radio_vein = qt.QRadioButton('Veins')
-        options_grid_layout.addWidget(self.radio_art, 0, 1, 0)
-        options_grid_layout.addWidget(self.radio_vein, 0, 2, 0)
-
-        vs_form_layout.addRow(options_grid_layout)
-
-        groupbox = qt.QGroupBox()
-        groupbox.setTitle('Choose one or more scalar map:')
-        options_grid_layout = qt.QGridLayout(groupbox)
-        options_grid_layout.setColumnStretch(0, 0)
-        options_grid_layout.setColumnStretch(0, 1)
-        options_grid_layout.setColumnStretch(0, 2)
-
         self.markups_selector = slicer.qSlicerSimpleMarkupsWidget()
-        self.markups_selector.objectName = 'seedFiducialsNodeSelector'
-        self.markups_selector = slicer.qSlicerSimpleMarkupsWidget()
-        self.markups_selector.objectName = 'seedFiducialsNodeSelector'
-        self.markups_selector.toolTip = "Select the fiducials to use as the origin of the algorithm."
-        self.markups_selector.setNodeBaseName("OriginSeeds")
-        self.markups_selector.defaultNodeColor = qt.QColor(202, 169, 250)
-        self.markups_selector.maximumHeight = 250
+        self.markups_selector.objectName = 'arteryFiducialsNodeSelector'
+        self.markups_selector.setNodeBaseName("OriginSeedsArteries")
+        self.markups_selector.defaultNodeColor = qt.QColor(200, 8, 21)
+        self.markups_selector.maximumHeight = 150
         self.markups_selector.markupsSelectorComboBox().noneEnabled = False
-        vs_form_layout.addRow("Initial points:", self.markups_selector)
+        vs_form_layout.addRow("Arteries initialization:", self.markups_selector)
         self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
                             self.markups_selector, 'setMRMLScene(vtkMRMLScene*)')
+
+        self.markups_selector_vein = slicer.qSlicerSimpleMarkupsWidget()
+        self.markups_selector_vein.objectName = 'veinFiducialsNodeSelector'
+        self.markups_selector_vein.setNodeBaseName("OriginSeedsVeins")
+        self.markups_selector_vein.defaultNodeColor = qt.QColor(65, 105, 225)
+        self.markups_selector_vein.maximumHeight = 150
+        self.markups_selector_vein.markupsSelectorComboBox().noneEnabled = False
+        vs_form_layout.addRow("Veins initialization:", self.markups_selector_vein)
+        self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                            self.markups_selector_vein, 'setMRMLScene(vtkMRMLScene*)')
 
         self.layout.addStretch(1)
 
@@ -224,24 +227,35 @@ class VesselSegmentationWidget:
 
     def on_compute_button(self):
 
-        if self.output_node and self.volume_node and self.markups_selector.currentNode():
+        if self.output_node and self.volume_node and self.markups_selector.currentNode() and \
+                self.markups_selector_vein.currentNode():
             current_seeds_node = self.markups_selector.currentNode()
-            fid_list = []
+            art_init = []
             for n in range(current_seeds_node.GetNumberOfFiducials()):
                 current = [0, 0, 0]
                 current_seeds_node.GetNthFiducialPosition(n, current)
-                fid_list.append(current)
+                art_init.append(current)
+
+            art_path = os.path.join(self.tmp, 'arteries.pkl')
+            with open(art_path, 'wb') as handle:
+                pickle.dump(art_init, handle)
+
+            current_seeds_node = self.markups_selector_vein.currentNode()
+            vein_init = []
+            for n in range(current_seeds_node.GetNumberOfFiducials()):
+                current = [0, 0, 0]
+                current_seeds_node.GetNthFiducialPosition(n, current)
+                vein_init.append(current)
+
+            vein_path = os.path.join(self.tmp, 'veins.pkl')
+            with open(vein_path, 'wb') as handle:
+                pickle.dump(vein_init, handle)
 
             properties = {'useCompression': 0}
             volume_path = os.path.join(self.tmp, 'reference.nii')
             slicer.util.saveNode(self.volume_node, volume_path, properties)
 
-            if self.radio_art.isChecked():
-                vessel_type = 0
-            else:
-                vessel_type = 1
-
-            segmentation_path = self.logic.segment(volume_path, fid_list, vessel_type)
+            segmentation_path = self.logic.segment()
 
             _, new_node = slicer.util.loadVolume(segmentation_path, returnNode=True)
 
@@ -278,33 +292,37 @@ class VesselSegmentationWidget:
 
     def cleanup(self):
         for filename in os.listdir(self.tmp):
-            path = os.path.join(self.tmp, filename)
-            if os.path.isfile(path):
-                os.unlink(path)
-            elif os.path.isdir(path):
-                shutil.rmtree(path)
+            if not filename.endswith('.md'):
+                path = os.path.join(self.tmp, filename)
+                if os.path.isfile(path):
+                    os.unlink(path)
+                elif os.path.isdir(path):
+                    shutil.rmtree(path)
 
 
 class VesselSegmentationLogic:
-    def __init__(self, temp_folder):
-        self.temp_folder = temp_folder
+    def __init__(self):
+        self.temp_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..'))
+        self.client = docker.from_env(environment=slicer.util.startupEnvironment())
 
-    def segment(self, reference_path, markups_list, vessel_type):
-        output_path = os.path.join(self.temp_folder, 'output-label.nii')
-        markups_path = os.path.join(self.temp_folder, 'init.pkl')
+    def segment(self):
 
-        with open(markups_path, 'wb') as handle:
-            pickle.dump(markups_list, handle)
+        self.client.containers.prune()
+        self.client.images.build(path=self.temp_folder, dockerfile='Dockerfile',
+                                 tag='test_docker_vessels')
+        mounts = {
+            os.path.join(self.temp_folder, 'test_dataset', 'docker_infer'): {'bind': '/test_docker', 'mode': 'rw'}}
+        self.client.containers.run(image='test_docker_vessels', auto_remove=True, volumes=mounts, name='DeepVessel')
 
-        # with open('/Users/imag2/Desktop/VesselsSegmentation/test_dataset/init.pkl', 'wb') as handle:
-        #     pickle.dump(markups_list, handle)
+        # cmd = 'docker ps -aq --no-trunc -f status=exited | xargs docker rm'
+        # pipe(cmd, True, self.my_env)
+        #
+        # cmd = 'docker build -t test_docker_vessels . && docker run -v ' + \
+        #       os.path.join(self.temp_folder, 'test_dataset',
+        #                    'docker_infer') + ':/test_docker --name DeepVessel test_docker_vessels '
+        # pipe(cmd, True, self.my_env)
 
-        if vessel_type == 1:
-            vessel = 'vein'
-        else:
-            vessel = 'artery'
-
-        vs.proc(reference_path, markups_path, vessel, output_path)
+        output_path = os.path.join(self.temp_folder, 'test_dataset', 'docker_infer', 'seg-label.nii')
 
         return output_path
 
