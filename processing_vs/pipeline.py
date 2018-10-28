@@ -1,35 +1,61 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from processing_vs.logic_vs import *
 import os.path
 
+import numpy as np
 
-def proc(volume, seeds, vessel_type, output):
+from processing_vs.logic_vs import *
+
+
+def proc(volume, arteries, veins, output):
     data, affine, _ = load_nii(volume)
-    points = load_pkl(seeds)
-    if vessel_type.lower() == 'artery':
-        label_number = 17
-    else:
-        label_number = 16
+    points = []
+    if arteries is not None:
+        a = load_pkl(arteries)
+        if a is not None:
+            points.append(a)
+    if veins is not None:
+        v = load_pkl(veins)
+        if v is not None:
+            points.append(v)
 
     use_gpu = False
     cnn = Cnn(use_gpu)
-    hierarchy = Tree(points, affine)
-
-    # mask_skeleton = hierarchy.get_label_mask(data, label_number)
-    # save_nii(mask_skeleton, affine, '/Users/imag2/Desktop/skeleton-label.nii.gz')
-
     deploy_fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'cnn_models', 'deploy.prototxt')
+    # model_fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'cnn_models',
+    #                            'snapshot_iter_135000.caffemodel')
     model_fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'cnn_models',
-                               'snapshot_iter_135000.caffemodel')
+                               'benchmark.caffemodel')
+    output_data = []
+    vein_label = 16
+    art_label = 17
+    for i, init in enumerate(points):
+        hierarchy = Tree(init, affine)
 
-    cnn.load_net(deploy_fpath, model_fpath)
-    out_patches = cnn.infer(hierarchy.get_patches(data))
+        # mask_skeleton = hierarchy.get_label_mask(data, label_number)
+        # save_nii(mask_skeleton, affine, '/Users/imag2/Desktop/skeleton-label.nii.gz')
 
-    output_data = reconstruct(out_patches, data, label_number)
+        cnn.load_net(deploy_fpath, model_fpath)
+        out_patches = cnn.infer(hierarchy.get_patches(data))
 
-    output_data[output_data == 1] = 17
-    output_data[output_data == 2] = 16
+        seg = reconstruct(out_patches, data)
+        if i == 1:
+            seg[seg == 1] = vein_label
+        else:
+            if len(points) > 1 and i == 0:
+                seg[seg == 1] = art_label
+            else:
+                if arteries is not None:
+                    seg[seg == 1] = art_label
+                else:
+                    seg[seg == 1] = vein_label
 
-    save_nii(output_data, affine, output)
+        output_data.append(seg)
+
+    if len(points) > 1:
+        final_seg = np.maximum(output_data[0], output_data[1])
+    else:
+        final_seg = output_data[0]
+
+    save_nii(final_seg, affine, output)
