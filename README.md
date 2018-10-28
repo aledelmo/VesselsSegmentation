@@ -1,6 +1,14 @@
 # VesselsSegmentation
 Semi-automatic segmentation of veins and arteries using a deep learning approach
 
+## Docker
+
+docker build -t test_docker_vessels .
+&& docker run
+-v /Users/imag2/Desktop/VesselsSegmentation/test_dataset:/test_docker
+--name DeepVessel
+test_docker_vessels 
+
 ## Other repositories
 
 This software is part of the IMAG2 framework. It can be complemented by:
