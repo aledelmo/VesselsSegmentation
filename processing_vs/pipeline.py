@@ -54,8 +54,10 @@ def proc(volume, arteries, veins, output):
         output_data.append(seg)
 
     if len(points) > 1:
-        final_seg = np.maximum(output_data[0], output_data[1])
+        combined = np.maximum(output_data[0], output_data[1])
     else:
-        final_seg = output_data[0]
+        combined = output_data[0]
+
+    final_seg = improve_seg(combined, art_label, vein_label)
 
     save_nii(final_seg, affine, output)
