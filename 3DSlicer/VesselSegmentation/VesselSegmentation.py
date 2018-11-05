@@ -48,7 +48,7 @@ class VesselSegmentation:
         self.parent = parent
 
         module_dir = os.path.dirname(self.parent.path)
-        icon_path = os.path.join(module_dir, 'Resources', 'icon.png')
+        icon_path = os.path.join(module_dir, 'Resources', 'icon.jpg')
         if os.path.isfile(icon_path):
             parent.icon = qt.QIcon(icon_path)
 
