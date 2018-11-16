@@ -16,7 +16,7 @@ This software is part of the IMAG2 framework. It can be complemented by:
 * [PQL]: the first ever method for the segmentation of pelvic tractograms.
 * [Tractography Metrics]: tool for the analysis of fiber bundles.
 * [IMAG2 Utilities]: collection of various scripts.
-* [IMAG2 Website]: the completely redesigned team website (<https://aledelmo.000webhostapp.com>)
+* [IMAG2 Website]: the completely redesigned team website (<http://www.imag2.org>)
 
  License
 ----
