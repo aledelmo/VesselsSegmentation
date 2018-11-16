@@ -1,0 +1,22 @@
+train_net: "/tsi/doctorants/avirzi/Deep_Vessels_Cross_Validation/cnn_models/train.prototxt"
+test_net: "/tsi/doctorants/avirzi/Deep_Vessels_Cross_Validation/cnn_models/val.prototxt"
+test_iter: 15
+# make test net, but don't invoke it from the solver itself
+test_interval: 999999999
+display: 20
+average_loss: 20
+lr_policy: "fixed"
+#lr_policy: "step"
+#gamma: 0.1
+#stepsize: 57600
+# lr for unnormalized softmax
+base_lr: 1e-6
+# high momentum
+momentum: 0.99
+# no gradient accumulation
+iter_size: 1
+max_iter: 700000
+weight_decay: 0.0005
+snapshot: 5000
+snapshot_prefix: "/tsi/doctorants/avirzi/Deep_Vessels_Cross_Validation/cnn_models/Snapshots/Model5/lr3/snapshot"
+test_initialization: false
