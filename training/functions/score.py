@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import division
 
 import os
@@ -33,7 +36,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
 
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label'):
-    print('>>>', datetime.now(), 'Begin seg tests')
+    print('Begin seg tests')
     solver.test_nets[0].share_with(solver.net)
     do_seg_tests(solver.test_nets[0], solver.iter, save_format, dataset, layer, gt)
 
@@ -55,6 +58,6 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     iu = np.diag(hist) / (hist.sum(1) + hist.sum(0) - np.diag(hist))
     print('>>>', datetime.now(), 'Iteration', iter, 'mean IU', np.nanmean(iu))
     freq = hist.sum(1) / hist.sum()
-    print('>>>', datetime.now(), 'Iteration', iter, 'fwavacc', \
+    print('>>>', datetime.now(), 'Iteration', iter, 'fwavacc',
           (freq[freq > 0] * iu[freq > 0]).sum())
     return hist

@@ -13,4 +13,4 @@ ADD test_dataset/docker_infer/veins.pkl .
 
 RUN pip install -r requirements.txt
 
-CMD ["python", "vessel_segmentation.py", "reference.nii",  "/test_docker/seg-label.nii", "--arteries", "arteries.pkl", "--veins", "veins.pkl"]
+CMD ["python", "vessel_segmentation.py", "reference.nii",  "/vessels_seg/seg-label.nii", "--arteries", "arteries.pkl", "--veins", "veins.pkl"]

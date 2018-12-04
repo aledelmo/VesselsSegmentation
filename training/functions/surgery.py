@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import division
 
 import numpy as np
-import caffe
+
 
 def transplant(new_net, net, suffix=''):
     """
@@ -54,10 +57,10 @@ def interp(net, layers):
         m, k, h, w = net.params[l][0].data.shape
         if m != k and k != 1:
             print('input + output channels need to be the same or |output| == 1')
-            raise
+            raise ValueError
         if h != w:
             print('filters need to be square')
-            raise
+            raise ValueError
         filt = upsample_filt(h)
         net.params[l][0].data[list(range(m)), list(range(k)), :, :] = filt
 

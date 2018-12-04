@@ -1,5 +1,5 @@
-train_net: "/tsi/doctorants/avirzi/Deep_Vessels_Cross_Validation/cnn_models/train.prototxt"
-test_net: "/tsi/doctorants/avirzi/Deep_Vessels_Cross_Validation/cnn_models/val.prototxt"
+train_net: "/workspace/files/train.prototxt"
+test_net: "/workspace/files/val.prototxt"
 test_iter: 15
 # make test net, but don't invoke it from the solver itself
 test_interval: 999999999
@@ -18,5 +18,5 @@ iter_size: 1
 max_iter: 700000
 weight_decay: 0.0005
 snapshot: 5000
-snapshot_prefix: "/tsi/doctorants/avirzi/Deep_Vessels_Cross_Validation/cnn_models/Snapshots/Model5/lr3/snapshot"
+snapshot_prefix: "/workspace/files/log"
 test_initialization: false
