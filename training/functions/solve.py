@@ -51,3 +51,4 @@ def solve(solver_path, base_deploy, base_model, validation_path):
     for x in range(0, 20):
         solver.step(5000)
         seg_tests(solver, False, val, layer='score')
+
