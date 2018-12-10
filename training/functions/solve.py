@@ -13,7 +13,7 @@ import numpy as np
 from .score import seg_tests
 from .surgery import transplant, interp
 
-sys.path.append('/workspace/functions')
+sys.path.append(os.path.abspath(os.path.dirname(os.path.realpath(__file__))))
 
 
 @contextmanager

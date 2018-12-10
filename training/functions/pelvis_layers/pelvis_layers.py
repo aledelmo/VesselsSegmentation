@@ -63,10 +63,10 @@ class PelvisTrainDataLayer(caffe.Layer):
             raise Exception("Do not define a bottom.")
 
         # load indices for images and labels
-        val = []
+        self.indices = []
         with cd(self.pelvis_dir):
             for file in glob.glob("*.png"):
-                val.append(os.path.splitext(file)[0])
+                self.indices.append(os.path.splitext(file)[0])
         self.idx = 0
 
         # make eval deterministic
@@ -183,10 +183,10 @@ class PelvisValDataLayer(caffe.Layer):
             raise Exception("Do not define a bottom.")
 
         # load indices for images and labels
-        val = []
+        self.indices = []
         with cd(self.pelvis_dir):
             for file in glob.glob("*.png"):
-                val.append(os.path.splitext(file)[0])
+                self.indices.append(os.path.splitext(file)[0])
         self.idx = 0
 
         # make eval deterministic
