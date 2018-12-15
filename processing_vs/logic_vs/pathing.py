@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
 import numpy as np
 
 
-def distance(current, candidate, parent,  alpha=200):
+def distance(current, candidate, parent, alpha=200):
     if parent is not None:
         parent = parent.voxel
 
