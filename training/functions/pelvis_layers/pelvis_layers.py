@@ -50,9 +50,7 @@ class PelvisTrainDataLayer(caffe.Layer):
         # config
         params = eval(self.param_str)
         self.pelvis_dir = params['pelvis_dir']
-        self.split = params['split']
         self.mean = np.array(params['mean'])
-        self.random = params.get('randomize', True)
         self.seed = params.get('seed', None)
 
         # two tops: data and label
@@ -67,22 +65,18 @@ class PelvisTrainDataLayer(caffe.Layer):
         with cd(self.pelvis_dir):
             for file in glob.glob("*.png"):
                 self.indices.append(os.path.splitext(file)[0])
-        self.idx = 0
 
-        # make eval deterministic
-        if 'train' not in self.split:
-            self.random = False
-
-        # randomization: seed and pick
-        if self.random:
-            random.seed(self.seed)
-            self.idx = random.randint(0, len(self.indices) - 1)
-            self.set_idx = {self.idx}
+        random.seed(self.seed)
+        self.idx_list = list(range(0, len(self.indices)))
+        random.shuffle(self.idx_list)
+        self.current_idx = 0
+        self.idx = self.idx_list[self.current_idx]
 
     def reshape(self, bottom, top):
         # load image + label image pair
-        self.data = self.load_image(self.indices[self.idx])
-        self.label = self.load_label(self.indices[self.idx])
+        idx = self.idx_list[self.current_idx]
+        self.data = self.load_image(self.indices[idx])
+        self.label = self.load_label(self.indices[idx])
         # reshape tops to fit (leading 1 is for batch dimension)
         top[0].reshape(1, *self.data.shape)
         top[1].reshape(1, *self.label.shape)
@@ -92,16 +86,12 @@ class PelvisTrainDataLayer(caffe.Layer):
         top[0].data[...] = self.data
         top[1].data[...] = self.label
 
-        # pick next input
-        if self.random:
-            self.idx = random.randint(0, len(self.indices) - 1)
-            while self.idx in self.set_idx:
-                self.idx = random.randint(0, len(self.indices) - 1)
-            self.set_idx.add(self.idx)
-        else:
-            self.idx += 1
-            if self.idx == len(self.indices):
-                self.idx = 0
+        self.current_idx += 1
+        if self.current_idx == len(self.indices):
+            self.seed += 1
+            random.seed(self.seed)
+            random.shuffle(self.idx_list)
+            self.current_idx = 0
 
     def backward(self, top, propagate_down, bottom):
         pass
@@ -170,10 +160,7 @@ class PelvisValDataLayer(caffe.Layer):
         # config
         params = eval(self.param_str)
         self.pelvis_dir = params['pelvis_dir']
-        self.split = params['split']
         self.mean = np.array(params['mean'])
-        self.random = params.get('randomize', True)
-        self.seed = params.get('seed', None)
 
         # two tops: data and label
         if len(top) != 2:
@@ -187,17 +174,8 @@ class PelvisValDataLayer(caffe.Layer):
         with cd(self.pelvis_dir):
             for file in glob.glob("*.png"):
                 self.indices.append(os.path.splitext(file)[0])
+
         self.idx = 0
-
-        # make eval deterministic
-        if 'train' not in self.split:
-            self.random = False
-
-        # randomization: seed and pick
-        if self.random:
-            random.seed(self.seed)
-            self.idx = random.randint(0, len(self.indices) - 1)
-            self.set_idx = {self.idx}
 
     def reshape(self, bottom, top):
         # load image + label image pair
@@ -212,16 +190,9 @@ class PelvisValDataLayer(caffe.Layer):
         top[0].data[...] = self.data
         top[1].data[...] = self.label
 
-        # pick next input
-        if self.random:
-            self.idx = random.randint(0, len(self.indices) - 1)
-            while self.idx in self.set_idx:
-                self.idx = random.randint(0, len(self.indices) - 1)
-            self.set_idx.add(self.idx)
-        else:
-            self.idx += 1
-            if self.idx == len(self.indices):
-                self.idx = 0
+        self.idx += 1
+        if self.idx == len(self.indices):
+            self.idx = 0
 
     def backward(self, top, propagate_down, bottom):
         pass

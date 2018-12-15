@@ -40,7 +40,7 @@ def solve(solver_path, base_deploy, base_model, validation_path):
     del base_net
     interp_layers = [k for k in list(solver.net.params.keys()) if 'up' in k]
     interp(solver.net, interp_layers)
-    # val = np.loadtxt(validation_path, dtype=str)
+
     val = []
     with cd(validation_path):
         for file in glob.glob("*.png"):
@@ -48,7 +48,7 @@ def solve(solver_path, base_deploy, base_model, validation_path):
     val = np.sort(np.array(val))
 
     print('Training Started')
-    for x in range(0, 20):
+    for x in range(0, 40):
         solver.step(5000)
         seg_tests(solver, False, val, layer='score')
 
