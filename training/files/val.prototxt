@@ -6,7 +6,7 @@ layer {
   python_param {
     module: "pelvis_layers"
     layer: "PelvisValDataLayer"
-    param_str: "{\'pelvis_dir\': \'/workspace/files/dataset/val\', \'seed\': 1337, \'split\': \'val\', \'mean\': (0, 0, 0)}"
+    param_str: "{\'pelvis_dir\': \'/workspace/files/dataset/val\', \'mean\': (0, 0, 0)}"
   }
 }
 layer {
