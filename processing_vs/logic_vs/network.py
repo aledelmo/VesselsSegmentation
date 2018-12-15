@@ -11,7 +11,7 @@ def apply_infer(patch, net):
     # _patch -= _patch.mean(axis=0)
     _patch = _patch.transpose((2, 0, 1))
 
-    print(_patch)
+    # print(_patch)
 
     net.blobs['data'].reshape(1, *_patch.shape)
     net.blobs['data'].data[...] = _patch
