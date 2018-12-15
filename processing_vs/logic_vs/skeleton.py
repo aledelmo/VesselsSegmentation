@@ -40,7 +40,7 @@ class Tree:
 
             Node('leaf', voxel=point, parent=best_node, dist=min_dist)
 
-        print(RenderTree(self.tree))
+        # print(RenderTree(self.tree))
 
     def get_label_mask(self, ref_img, label_number):
         mask = np.zeros(ref_img.shape, dtype=np.uint16)
