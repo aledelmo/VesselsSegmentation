@@ -23,10 +23,10 @@ def proc(volume, arteries, veins, output):
     use_gpu = False
     cnn = Cnn(use_gpu)
     deploy_fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'cnn_models', 'deploy.prototxt')
-    # model_fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'cnn_models',
-    #                            'snapshot_iter_135000.caffemodel')
     model_fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'cnn_models',
-                               'benchmark.caffemodel')
+                               '2018_12_13.caffemodel')
+    # model_fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'cnn_models',
+    #                            'benchmark.caffemodel')
     output_data = []
     vein_label = 16
     art_label = 17
