@@ -146,6 +146,7 @@ class VesselSegmentationWidget:
         self.markups_selector.defaultNodeColor = qt.QColor(200, 8, 21)
         self.markups_selector.maximumHeight = 150
         self.markups_selector.markupsSelectorComboBox().noneEnabled = False
+        self.markups_selector.connect('markupsFiducialNodeChanged()', self.on_markups_added)
         vs_form_layout.addRow("Arteries initialization:", self.markups_selector)
         self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
                             self.markups_selector, 'setMRMLScene(vtkMRMLScene*)')
@@ -156,6 +157,7 @@ class VesselSegmentationWidget:
         self.markups_selector_vein.defaultNodeColor = qt.QColor(65, 105, 225)
         self.markups_selector_vein.maximumHeight = 150
         self.markups_selector_vein.markupsSelectorComboBox().noneEnabled = False
+        self.markups_selector_vein.connect('markupsFiducialNodeChanged()', self.on_markupsvein_added)
         vs_form_layout.addRow("Veins initialization:", self.markups_selector_vein)
         self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
                             self.markups_selector_vein, 'setMRMLScene(vtkMRMLScene*)')
@@ -304,6 +306,18 @@ class VesselSegmentationWidget:
     def on_output_select(self):
         self.output_node = self.output_selector.currentNode()
 
+    def on_markups_added(self):
+        displaynode = self.markups_selector.currentNode().GetDisplayNode()
+        displaynode.SetTextScale(0)
+        displaynode.SetGlyphScale(1.)
+        displaynode.SetVisibility(True)
+
+    def on_markupsvein_added(self):
+        displaynode = self.markups_selector_vein.currentNode().GetDisplayNode()
+        displaynode.SetTextScale(0)
+        displaynode.SetGlyphScale(1.)
+        displaynode.SetVisibility(True)
+
     def on_compute_button(self):
 
         if self.output_node and self.volume_node and self.markups_selector.currentNode() and \
@@ -374,58 +388,6 @@ class VesselSegmentationWidget:
             get_patches(volume_path, label_path, self.dir, legacy)
 
             self.cleanup()
-
-            # current_seeds_node = self.markups_selector.currentNode()
-            # art_init = []
-            # for n in range(current_seeds_node.GetNumberOfFiducials()):
-            #     current = [0, 0, 0, 1]
-            #     current_seeds_node.GetNthFiducialWorldCoordinates(n, current)
-            #     transformRasToVolumeRas = vtk.vtkGeneralTransform()
-            #     slicer.vtkMRMLTransformNode.GetTransformBetweenNodes(None, self.ref_node.GetParentTransformNode(),
-            #                                                          transformRasToVolumeRas)
-            #     point_VolumeRas = transformRasToVolumeRas.TransformPoint(current[0:3])
-            #     volumeRasToIjk = vtk.vtkMatrix4x4()
-            #     self.ref_node.GetRASToIJKMatrix(volumeRasToIjk)
-            #     point_Ijk = [0, 0, 0, 1]
-            #     volumeRasToIjk.MultiplyPoint(np.append(point_VolumeRas, 1.0), point_Ijk)
-            #     point_Ijk = [int(round(c)) for c in point_Ijk[0:3]]
-            #
-            #     art_init.append(point_Ijk)
-            #
-            # current_seeds_node = self.markups_selector_vein.currentNode()
-            # vein_init = []
-            # for n in range(current_seeds_node.GetNumberOfFiducials()):
-            #     current = [0, 0, 0, 1]
-            #     current_seeds_node.GetNthFiducialWorldCoordinates(n, current)
-            #     transformRasToVolumeRas = vtk.vtkGeneralTransform()
-            #     slicer.vtkMRMLTransformNode.GetTransformBetweenNodes(None, self.ref_node.GetParentTransformNode(),
-            #                                                          transformRasToVolumeRas)
-            #     point_VolumeRas = transformRasToVolumeRas.TransformPoint(current[0:3])
-            #     volumeRasToIjk = vtk.vtkMatrix4x4()
-            #     self.ref_node.GetRASToIJKMatrix(volumeRasToIjk)
-            #     point_Ijk = [0, 0, 0, 1]
-            #     volumeRasToIjk.MultiplyPoint(np.append(point_VolumeRas, 1.0), point_Ijk)
-            #     point_Ijk = [int(round(c)) for c in point_Ijk[0:3]]
-            #
-            #     vein_init.append(point_Ijk)
-            #
-            # ref_array = slicer.util.arrayFromVolume(self.ref_node)
-            # ref_img = np.copy(ref_array / np.amax(ref_array))
-            # for pos, i in enumerate(art_init):
-            #     i = tuple(reversed(i))
-            #     patch = (255 * ref_img[i[0] - 15:i[0] + 16, i[1] - 15:i[1] + 16, i[2] - 1:i[2] + 2]).astype(np.uint8)
-            #     im = Image.fromarray(patch[::-1])
-            #     path = os.path.join(self.dir, '{}/{}.png'.format(self.ref_node.GetName(), pos))
-            #     im.save(path)
-            #
-            # label_array = slicer.util.arrayFromVolume(self.label_node)
-            # label_img = np.copy(label_array)
-            # for pos, i in enumerate(art_init):
-            #     i = tuple(reversed(i))
-            #     patch = (label_img[i[0] - 15:i[0] + 16, i[1] - 15:i[1] + 16, i[2]]).astype(np.uint8)
-            #     im = Image.fromarray(patch[::-1])
-            #     path = os.path.join(self.dir, '{}/{}.pgm'.format(self.ref_node.GetName(), pos))
-            #     im.save(path)
 
     def on_clean_button(self):
         if self.dir:
