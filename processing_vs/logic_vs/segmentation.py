@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from builtins import zip
-
 import numpy as np
 from skimage.measure import label
 
@@ -16,7 +14,7 @@ def reconstruct(patches, reference):
         tokeep = conn[15, 15]
         if tokeep != 0:
             for index, value in np.ndenumerate(patch[1]):
-                if conn[index] == tokeep and tokeep != 0:
+                if conn[index] == tokeep:
                     patch[1][index] = 1
                 elif conn[index] != tokeep and value != 0:
                     patch[1][index] = 3

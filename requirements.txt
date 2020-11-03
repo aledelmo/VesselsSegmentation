@@ -1,5 +1,5 @@
-anytree==2.4.3
-future==0.16.0
-joblib==0.12.5
-nibabel==2.3.0
-scikit-image==0.14.1
+anytree
+future
+joblib
+nibabel
+scikit-image

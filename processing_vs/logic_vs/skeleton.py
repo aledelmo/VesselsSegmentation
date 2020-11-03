@@ -3,8 +3,6 @@
 
 from __future__ import division
 
-from builtins import int
-
 import numpy as np
 from anytree import Node, RenderTree, PreOrderIter
 from nibabel.affines import apply_affine
@@ -40,13 +38,10 @@ class Tree:
 
             Node('leaf', voxel=point, parent=best_node, dist=min_dist)
 
-        # print(RenderTree(self.tree))
-
     def get_label_mask(self, ref_img, label_number):
         mask = np.zeros(ref_img.shape, dtype=np.uint16)
         for node in PreOrderIter(self.tree):
             for child in node.children:
-                # mask[self.points[:, 0], self.points[:, 1], self.points[:, 2]] = label_number
                 idx = bresenhamline(node.voxel[:, np.newaxis].T, child.voxel[:, np.newaxis].T, max_iter=-1).astype(
                     np.int16)
                 mask[idx[:, 0], idx[:, 1], idx[:, 2]] = label_number

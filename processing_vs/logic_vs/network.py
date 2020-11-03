@@ -11,8 +11,6 @@ def apply_infer(patch, net):
     # _patch -= _patch.mean(axis=0)
     _patch = _patch.transpose((2, 0, 1))
 
-    # print(_patch)
-
     net.blobs['data'].reshape(1, *_patch.shape)
     net.blobs['data'].data[...] = _patch
     net.forward()
@@ -50,9 +48,5 @@ class Cnn:
         num_cores = cpu_count()
         with Parallel(n_jobs=num_cores, backend='threading') as parallel:
             seg = parallel(delayed(apply_infer)(patch, self.net) for patch in patches)
-
-        # seg = []
-        # for patch in patches:
-        #     seg.append(apply_infer(patch, self.net))
 
         return seg
