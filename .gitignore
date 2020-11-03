@@ -112,5 +112,6 @@ venv.bak/
 # jupyter
 notebook/
 
-# old python
-.old/
+training/files/dataset/train
+training/files/dataset/val
+training/files/log

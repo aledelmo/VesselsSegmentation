@@ -14,10 +14,7 @@ def load_nii(fname):
     """
     img = nib.load(fname)
     canonical_img = nib.as_closest_canonical(img)
-    canonical_data = canonical_img.get_data()
-    canonical_affine = canonical_img.affine
-    canonical_vox = canonical_img.header.get_zooms()
-    return canonical_data, canonical_affine, canonical_vox
+    return canonical_img.get_fdata(), canonical_img.affine, canonical_img.header.get_zooms()
 
 
 def save_nii(data, affine, fname):
