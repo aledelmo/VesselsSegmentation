@@ -1,3 +1,52 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ca6c198c2c802cc9ba0e5a3e85e338539a7f408df795bb71fe3228c209d8bad3
-size 1420
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import caffe
+import numpy as np
+from joblib import Parallel, delayed, cpu_count
+
+
+def apply_infer(patch, net):
+    _patch = patch[1][..., ::-1]
+    # _patch -= _patch.mean(axis=0)
+    _patch = _patch.transpose((2, 0, 1))
+
+    net.blobs['data'].reshape(1, *_patch.shape)
+    net.blobs['data'].data[...] = _patch
+    net.forward()
+
+    out = net.blobs['score'].data[0].argmax(axis=0)
+    return patch[0], out
+
+
+class Cnn:
+    def __init__(self, use_gpu):
+        if use_gpu:
+            caffe.set_device(0)
+            caffe.set_mode_gpu()
+        else:
+            caffe.set_mode_cpu()
+        self.net = None
+
+    def __repr__(self):
+        return "{}()".format(self.__class__.__name__)
+
+    def __str__(self):
+        return "{}()".format('Convolutional Neural Network')
+
+    def load_net(self, deploy_fpath, model_fpath):
+        self.net = caffe.Net(deploy_fpath, model_fpath, caffe.TEST)
+
+    def infer(self, patches):
+
+        # from PIL import Image
+        # for i, patch in enumerate(patches[:5]):
+        #     _patch = patch[1]
+        #     result = Image.fromarray(_patch)
+        #     result.save('/home/delmonte/Desktop/png/{}.png'.format(i))
+
+        num_cores = cpu_count()
+        with Parallel(n_jobs=num_cores, backend='threading') as parallel:
+            seg = parallel(delayed(apply_infer)(patch, self.net) for patch in patches)
+
+        return seg

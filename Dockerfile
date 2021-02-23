@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:681fc168e775f32f14bd379d1e0c585e1164bf2a71a40e82bc62706bd6932c77
-size 457
+FROM bvlc/caffe:cpu
+
+WORKDIR .
+
+ADD vessel_segmentation.py .
+ADD requirements.txt .
+ADD processing_vs processing_vs
+ADD cnn_models cnn_models
+
+ADD test_dataset/docker_infer/reference.nii .
+ADD test_dataset/docker_infer/arteries.pkl .
+ADD test_dataset/docker_infer/veins.pkl .
+
+RUN pip install -r requirements.txt
+
+CMD ["python", "vessel_segmentation.py", "reference.nii",  "/vessels_seg/seg-label.nii", "--arteries", "arteries.pkl", "--veins", "veins.pkl"]

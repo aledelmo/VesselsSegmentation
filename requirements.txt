@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8d86a46ec0242e4fbc1225ba0964c0fa41ebae6dd8df9c36d5da292284630038
-size 43
+anytree
+future
+joblib
+nibabel
+scikit-image
